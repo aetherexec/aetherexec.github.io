@@ -5,15 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vyron Executor</title>
     <!-- Favicons for various devices -->
-    <link rel="icon" href="favicon.ico" type="image/png"> <!-- Your primary favicon -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+<link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+<link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+<link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+<meta name="theme-color" content="#ffffff">
     <link rel="manifest" href="/site.webmanifest">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Cloudflare Turnstile script -->
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style>
         /* Base Styles */
         html {
@@ -209,14 +220,8 @@
             min-width: 300px; /* Ensure content doesn't get too squished */
             padding-right: 0; /* Remove explicit padding-right */
             text-align: left; /* Default alignment */
+            pointer-events: none;
         }
-        /* Style for text inside hero-content to ensure it doesn't look like a link */
-        .hero-content h1,
-        .hero-content p {
-            text-decoration: none; /* Ensure no underline */
-            color: inherit; /* Ensure color is inherited, not link color */
-        }
-
         /* Media query for hero content text alignment on smaller screens */
         @media (max-width: 992px) {
             .hero-content {
@@ -241,13 +246,9 @@
             gap: 1rem;
             margin-top: 2rem;
             flex-wrap: wrap;
+            pointer-events: auto;
             /* No need for justify-content: center here if parent is centered */
         }
-        /* Re-enable pointer events for buttons within hero-content */
-        .hero-btns .btn {
-            pointer-events: auto; /* NEW: Re-enable pointer events for buttons */
-        }
-
         @media (max-width: 992px) {
             .hero-btns {
                 justify-content: center; /* Center buttons when hero content is centered */
@@ -320,10 +321,10 @@
             justify-content: center;
             overflow: hidden;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            position: relative; /* Essential for positioning pseudo-elements */
+            position: relative; /* Essential for positioning pseudo-elements and clickability */
             transition: var(--transition-smooth);
             flex-shrink: 0; /* Prevent it from shrinking too much */
-            /* Removed cursor: pointer from here in previous turn */
+            cursor: pointer; /* Indicate clickability */
         }
         .hero-img-container:hover {
             transform: scale(1.01);
@@ -343,7 +344,6 @@
             transition: opacity 0.3s ease-in-out;
             z-index: 10; /* Above the image, below the icon */
             border-radius: inherit; /* Inherit border-radius from container */
-            cursor: pointer; /* Apply cursor to overlay for visual cue */
         }
 
         /* Fullscreen icon on hover */
@@ -360,7 +360,6 @@
             opacity: 0; /* Initially hidden */
             transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
             z-index: 11; /* Above the overlay */
-            cursor: pointer; /* Apply cursor to icon for visual cue */
         }
 
         .hero-img-container:hover::before,
@@ -379,7 +378,6 @@
             transition: var(--transition-smooth); /* Smooth image scaling */
             /* Add border-radius to the image itself to match the container's radius */
             border-radius: inherit; /* This will inherit the 20px border-radius from .hero-img-container */
-            cursor: pointer; /* Only the image itself should have the pointer cursor */
         }
         .hero-img-container:hover img {
             transform: scale(1.03); /* Subtle zoom on image hover */
@@ -876,263 +874,190 @@
                 height: 35px;
             }
         }
-
-        /* Turnstile Overlay Styles */
-        #turnstile-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--darker); /* Dark background for the overlay */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999; /* Ensure it's on top of everything */
-            color: var(--light);
-            text-align: center;
-            opacity: 1;
-            transition: opacity 0.5s ease-out;
-        }
-
-        #turnstile-overlay.hidden {
-            opacity: 0;
-            pointer-events: none; /* Disable interaction when hidden */
-        }
-
-        #turnstile-overlay h2 {
-            font-size: 2rem;
-            margin-bottom: 1.5rem;
-        }
-
-        #turnstile-overlay p {
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
-            color: var(--gray);
-        }
     </style>
 </head>
 <body>
-    <!-- Cloudflare Turnstile Overlay -->
-    <div id="turnstile-overlay">
-        <h2>Verify you are human by completing the action below.</h2>
-        <p>Vyron needs to review the security of your connection before proceeding.</p>
-        <!-- The Turnstile widget will be rendered here -->
-        <div class="cf-turnstile" data-sitekey="0x4AAAAAABg6xmWk-xTGdD7d" data-callback="onTurnstileSuccess"></div>
-        <!-- IMPORTANT: Replace "YOUR_TURNSTILE_SITE_KEY" with your actual site key from Cloudflare Turnstile dashboard. -->
-        <!-- Get it from: https://developers.cloudflare.com/turnstile/get-started/ -->
-        <p style="margin-top: 2rem; font-size: 0.8rem; color: var(--gray);">Performance & security by Cloudflare</p>
+    <header>
+        <div class="container">
+            <a href="#top" class="logo">
+                <div class="logo-icon">
+                    <!-- REPLACED Font Awesome icon with your  Logo image -->
+                    <img src="Vyron Icon.png" alt="Vyron Logo">
+                </div>
+                <span>Vyron</span>
+            </a>
+            <nav>
+                <div class="menu-toggle" id="mobile-menu">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="#top" class="active">Home</a></li>
+                    <li><a href="#download">Download</a></li>
+                    <li><a href="#support">Support</li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero" id="top">
+            <div class="container">
+                <div class="hero-content">
+                    <h1>Supercharge Your Roblox Exploiting Experience with Vyron</h1>
+                    <p>Vyron is the ultimate emerging exploit for Roblox hackers. Accelerate your workflow with powerful script execution and designed to work flawlessly with Auto Farms and scripts alike.</p>
+                    <div class="hero-btns">
+                        <a href="#download" class="btn">
+                            <i class="fas fa-download"></i> Download Now
+                        </a>
+                        <button id="watchDemoBtn" class="btn btn-outline">
+                            <i class="fas fa-play-circle"></i> Watch Tutorial
+                        </button>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <div class="hero-img-container">
+                        <picture>
+                          <!-- The src and srcset attributes have been updated to 'vyron_app_preview.png' -->
+                          <source srcset="vyron_app_preview.png" type="image/png">
+                          <img src="vyron_app_preview.png" alt="Vyron Application Preview showing code editor and UI elements" onerror="this.onerror=null;this.src='https://placehold.co/500x400/0f172a/f1f5f9?text=Image+Not+Found';">
+                        </picture>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="download-section" id="download">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Download Vyron</h2>
+                    <p>Get started with Vyron today. Currently only available for Windows.</p>
+                </div>
+
+                <div class="download-grid">
+                    <div class="platform-card">
+                        <div class="platform-icon">
+                            <i class="fab fa-windows"></i>
+                        </div>
+                        <h3>Windows</h3>
+                        <p>Version 1 • Requires Windows 10 or later</p>
+                        <a href="https://dsc.gg/vyronxx" class="btn" download>
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                        <!-- New: Last updated date text -->
+                        <p class="last-updated-date">Last Updated: June 12, 2025 11:19 PM CST</p>
+                    </div>
+                </div>
+
+                <div class="requirements">
+                    <h3><i class="fas fa-info-circle"></i> System Requirements</h3>
+                    <p>
+                        • 64-bit Windows 10 version 1903 or later<br>
+                        • Minimum 4GB RAM, Intel or AMD Processors<br>
+                        • Latest version of Roblox (web version)
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="support-section" id="support">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Support Center</h2>
+                    <p>Find answers to common questions, troubleshoot issues, or contact our support team for personalized assistance.</p>
+                </div>
+
+                <div class="faq-container">
+                    <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; color: var(--secondary);">
+                        <i class="fas fa-question-circle"></i> Frequently Asked Questions
+                    </h3>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            How do I install Vyron on Windows?
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>To install Vyron on Windows, disable your antivirus and download the zip from the Download page. After unzipping the archive, you should see the executable "Vyron X". Open it with administrator privileges and it should be ready to use.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            Is Vyron paid?
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Vyron is completely free to use and will always remain free. There are no hidden costs, subscriptions, or in-app purchases. Simply download and enjoy!</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div the css class="faq-question">
+                            How do I update to the latest version?
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Vyron is currently non auto updating, which means you will have to manually download new updates. We are currently working on a fix. To download the newest version of Vyron, visit the Download page.</p>
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-question">
+                           I'm having an issue. What do I do?
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Join our Discord Server and open a support ticket. Make sure to include photos and descriptive detail, or we cannot help you.</p>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div class="contact-options">
+                    <a href="http://dsc.gg/vyronxx" target="_blank" class="btn">
+                        <i class="fab fa-discord"></i> Join Our Discord
+                    </a>
+                   
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="social-links">
+            <a href="http://dsc.gg/vyronxx" target="_blank"><i class="fab fa-discord"></i></a>
+            <a href="https://www.tiktok.com/@aetherexec" target="_blank"><i class="fab fa-tiktok"></i></a>
+             <a href="https://www.youtube.com/@VyronExecutor" target="_blank"><i class="fab fa-youtube"></i></a>
+        </div>
+        <p>© 2025 Vyron. All rights reserved.</p>
+    
+    </footer>
+
+    <div id="videoModal" class="modal">
+        <div class="modal-content">
+            <button class="close-button" aria-label="Close video">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="video-container">
+                <!-- IMPORTANT: Replace with your actual YouTube embed URL, make sure to add ?enablejsapi=1&version=3&playerapiid=ytplayer to allow JS control -->
+                <iframe id="youtubeIframe" src="https://www.youtube.com/embed/2Jg9AJWAWqg?si=nCOJo2pusEU948T3" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+        </div>
     </div>
 
-    <!-- Main Content (initially hidden) -->
-    <div id="main-content" style="display: none;">
-        <header>
-            <div class="container">
-                <a href="#top" class="logo">
-                    <div class="logo-icon">
-                        <!-- REPLACED Font Awesome icon with your  Logo image -->
-                        <img src="Vyron Icon.png" alt="Vyron Logo">
-                    </div>
-                    <span>Vyron</span>
-                </a>
-                <nav>
-                    <div class="menu-toggle" id="mobile-menu">
-                        <i class="fas fa-bars"></i>
-                    </div>
-                    <ul class="nav-links">
-                        <li><a href="#top" class="active">Home</a></li>
-                        <li><a href="#download">Download</a></li>
-                        <li><a href="#support">Support</li>
-                    </ul>
-                </nav>
-            </div>
-        </header>
-
-        <main>
-            <section class="hero" id="top">
-                <div class="container">
-                    <div class="hero-content">
-                        <h1>Supercharge Your Roblox Exploiting Experience with Vyron</h1>
-                        <p>Vyron is the ultimate emerging exploit for Roblox hackers. Accelerate your workflow with powerful script execution and designed to work flawlessly with Auto Farms and scripts alike.</p>
-                        <div class="hero-btns">
-                            <a href="#download" class="btn">
-                                <i class="fas fa-download"></i> Download Now
-                            </a>
-                            <button id="watchDemoBtn" class="btn btn-outline">
-                                <i class="fas fa-play-circle"></i> Watch Tutorial
-                            </button>
-                        </div>
-                    </div>
-                    <div class="hero-image">
-                        <div class="hero-img-container">
-                            <picture>
-                            <!-- The src and srcset attributes have been updated to 'vyron_app_preview.png' -->
-                            <source srcset="vyron_app_preview.png" type="image/png">
-                            <img src="vyron_app_preview.png" alt="Vyron Application Preview showing code editor and UI elements" onerror="this.onerror=null;this.src='https://placehold.co/500x400/0f172a/f1f5f9?text=Image+Not+Found';">
-                            </picture>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="download-section" id="download">
-                <div class="container">
-                    <div class="section-header">
-                        <h2>Download Vyron</h2>
-                        <p>Get started with Vyron today. Currently only available for Windows.</p>
-                    </div>
-
-                    <div class="download-grid">
-                        <div class="platform-card">
-                            <div class="platform-icon">
-                                <i class="fab fa-windows"></i>
-                            </div>
-                            <h3>Windows</h3>
-                            <p>Version 1 • Requires Windows 10 or later</p>
-                            <a href="https://dsc.gg/vyronxx" class="btn" download>
-                                <i class="fas fa-download"></i> Download
-                            </a>
-                            <!-- New: Last updated date text -->
-                            <p class="last-updated-date">Last Updated: June 12, 2025 11:19 PM CST</p>
-                        </div>
-                    </div>
-
-                    <div class="requirements">
-                        <h3><i class="fas fa-info-circle"></i> System Requirements</h3>
-                        <p>
-                            • 64-bit Windows 10 version 1903 or later<br>
-                            • Minimum 4GB RAM, Intel or AMD Processors<br>
-                            • Latest version of Roblox (web version)
-                        </p>
-                    </div>
-                </div>
-            </section>
-
-            <section class="support-section" id="support">
-                <div class="container">
-                    <div class="section-header">
-                        <h2>Support Center</h2>
-                        <p>Find answers to common questions, troubleshoot issues, or contact our support team for personalized assistance.</p>
-                    </div>
-
-                    <div class="faq-container">
-                        <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; color: var(--secondary);">
-                            <i class="fas fa-question-circle"></i> Frequently Asked Questions
-                        </h3>
-
-                        <div class="faq-item">
-                            <div class="faq-question">
-                                How do I install Vyron on Windows?
-                                <i class="fas fa-chevron-down"></i>
-                            </div>
-                            <div class="faq-answer">
-                                <p>To install Vyron on Windows, disable your antivirus and download the zip from the Download page. After unzipping the archive, you should see the executable "Vyron X". Open it with administrator privileges and it should be ready to use.</p>
-                            </div>
-                        </div>
-
-                        <div class="faq-item">
-                            <div class="faq-question">
-                                Is Vyron paid?
-                                <i class="fas fa-chevron-down"></i>
-                            </div>
-                            <div class="faq-answer">
-                                <p>Vyron is completely free to use and will always remain free. There are no hidden costs, subscriptions, or in-app purchases. Simply download and enjoy!</p>
-                            </div>
-                        </div>
-
-                        <div class="faq-item">
-                            <div the css class="faq-question">
-                                How do I update to the latest version?
-                                <i class="fas fa-chevron-down"></i>
-                            </div>
-                            <div class="faq-answer">
-                                <p>Vyron is currently non auto updating, which means you will have to manually download new updates. We are currently working on a fix. To download the newest version of Vyron, visit the Download page.</p>
-                            </div>
-                        </div>
-
-                        <div class="faq-item">
-                            <div class="faq-question">
-                            I'm having an issue. What do I do?
-                                <i class="fas fa-chevron-down"></i>
-                            </div>
-                            <div class="faq-answer">
-                                <p>Join our Discord Server and open a support ticket. Make sure to include photos and descriptive detail, or we cannot help you.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    
-                    <div class="contact-options">
-                        <a href="http://dsc.gg/vyronxx" target="_blank" class="btn">
-                            <i class="fab fa-discord"></i> Join Our Discord
-                        </a>
-                    
-                    </div>
-
-                </div>
-            </section>
-        </main>
-
-        <footer>
-            <div class="social-links">
-                <a href="http://dsc.gg/vyronxx" target="_blank"><i class="fab fa-discord"></i></a>
-                <a href="https://www.tiktok.com/@aetherexec" target="_blank"><i class="fab fa-tiktok"></i></a>
-                <a href="https://www.youtube.com/@VyronExecutor" target="_blank"><i class="fab fa-youtube"></i></a>
-            </div>
-            <p>© 2025 Vyron. All rights reserved.</p>
-        
-        </footer>
-
-        <div id="videoModal" class="modal">
-            <div class="modal-content">
-                <button class="close-button" aria-label="Close video">
-                    <i class="fas fa-times"></i>
-                </button>
-                <div class="video-container">
-                    <!-- IMPORTANT: Replace with your actual YouTube embed URL, make sure to add ?enablejsapi=1&version=3&playerapiid=ytplayer to allow JS control -->
-                    <iframe id="youtubeIframe" src="https://www.youtube.com/embed/2Jg9AJWAWqg?si=nCOJo2pusEU948T3" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                </div>
-            </div>
+    <!-- New Image Modal -->
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <button class="close-button" aria-label="Close image">
+                <i class="fas fa-times"></i>
+            </button>
+            <img id="modalImage" src="" alt="Full size image" class="w-full h-auto max-h-[80vh] rounded-lg object-contain mx-auto my-auto" />
         </div>
-
-        <!-- New Image Modal -->
-        <div id="imageModal" class="modal">
-            <div class="modal-content">
-                <button class="close-button" aria-label="Close image">
-                    <i class="fas fa-times"></i>
-                </button>
-                <img id="modalImage" src="" alt="Full size image" class="w-full h-auto max-h-[80vh] rounded-lg object-contain mx-auto my-auto" />
-            </div>
-        </div>
-    </div> <!-- End of main-content div -->
+    </div>
 
     <script>
-        // Callback function for Turnstile success
-        function onTurnstileSuccess() {
-            const overlay = document.getElementById('turnstile-overlay');
-            const mainContent = document.getElementById('main-content');
-            
-            // Add 'hidden' class to trigger fade-out animation
-            overlay.classList.add('hidden');
-            
-            // After the fade-out transition, hide the overlay and show main content
-            overlay.addEventListener('transitionend', () => {
-                overlay.style.display = 'none';
-                mainContent.style.display = 'block';
-                document.body.classList.remove('no-scroll'); // Re-enable scroll
-                initializePageScripts(); // Initialize main page scripts after content is visible
-            }, { once: true }); // Ensure this listener runs only once
-        }
-
-        // Initially hide main content and prevent scrolling until Turnstile is passed
-        document.addEventListener('DOMContentLoaded', () => {
-            document.body.classList.add('no-scroll');
-            // No need to call initializePageScripts here as it's called after Turnstile success
-        });
-
-        // Function to encapsulate all main page JavaScript
-        function initializePageScripts() {
+        (function() { // Start of IIFE to encapsulate variables
             // Helper function to manage body scroll
             function disableBodyScroll() {
                 document.body.classList.add('no-scroll');
@@ -1282,15 +1207,12 @@
 
             // Image Modal functionality (newly added)
             const heroImgContainer = document.querySelector('.hero-img-container');
-            // Select the image element specifically, not the container
-            const heroImageElement = heroImgContainer.querySelector('img'); 
-
             const imageModal = document.getElementById('imageModal');
             const modalImage = document.getElementById('modalImage');
             const closeImageModalBtn = imageModal.querySelector('.close-button');
 
             function openImageModal() {
-                const imageUrl = heroImageElement.src; // Get the src of the image element
+                const imageUrl = heroImgContainer.querySelector('img').src;
                 modalImage.src = imageUrl;
                 imageModal.classList.add('show');
                 disableBodyScroll();
@@ -1307,8 +1229,7 @@
                 }, { once: true }); // Ensure listener is only called once
             }
 
-            // Attach event listener only to the image element
-            heroImageElement.addEventListener('click', openImageModal);
+            heroImgContainer.addEventListener('click', openImageModal);
             closeImageModalBtn.addEventListener('click', closeImageModal);
 
             imageModal.addEventListener('click', (e) => {
@@ -1323,8 +1244,7 @@
                 }
             });
 
-        } // End of initializePageScripts
-        // Call this function after Turnstile success
+        })(); // End of IIFE
     </script>
 </body>
 </html>
