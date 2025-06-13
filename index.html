@@ -343,7 +343,6 @@
             opacity: 0; /* Initially hidden */
             transition: opacity 0.3s ease-in-out;
             z-index: 10; /* Above the image, below the icon */
-            border-radius: inherit; /* Inherit border-radius from container */
             cursor: pointer; /* Apply cursor to overlay for visual cue */
         }
 
@@ -1238,7 +1237,7 @@
             // Video Modal functionality (existing)
             const watchDemoBtn = document.getElementById('watchDemoBtn');
             const videoModal = document.getElementById('videoModal');
-            const videoCloseButton = videoModal.querySelector('.close-button');
+            const videoCloseButton = videoModal ? videoModal.querySelector('.close-button') : null; // Defensive check for videoCloseButton
             const youtubeIframe = document.getElementById('youtubeIframe');
 
             if (watchDemoBtn) { // Defensive check for watchDemoBtn
@@ -1248,30 +1247,32 @@
                 videoCloseButton.addEventListener('click', closeVideoModal);
             }
 
-            videoModal.addEventListener('click', (e) => {
-                if (e.target === videoModal) {
-                    closeVideoModal();
-                }
-            });
+            if (videoModal) { // Only attach if modal exists
+                videoModal.addEventListener('click', (e) => {
+                    if (e.target === videoModal) {
+                        closeVideoModal();
+                    }
+                });
 
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && videoModal.classList.contains('show')) {
-                    closeVideoModal();
-                }
-            });
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && videoModal.classList.contains('show')) {
+                        closeVideoModal();
+                    }
+                });
+            }
 
-
-            // Image Modal functionality (newly added)
+            // Image Modal functionality
             const heroImgContainer = document.querySelector('.hero-img-container');
             const imageModal = document.getElementById('imageModal');
             const modalImage = document.getElementById('modalImage');
-            const closeImageModalBtn = imageModal.querySelector('.close-button');
+            const closeImageModalBtn = imageModal ? imageModal.querySelector('.close-button') : null; // Defensive selection for close button
 
-            // Select the image element specifically, and add a defensive check
+            // The image element itself is inside heroImgContainer, and its src is needed for the modal
             const heroImageElement = heroImgContainer ? heroImgContainer.querySelector('img') : null; 
 
             function openImageModal() {
-                if (heroImageElement && modalImage) { // Ensure elements exist before accessing src
+                // Ensure all necessary elements exist before proceeding
+                if (heroImageElement && modalImage && imageModal) { 
                     const imageUrl = heroImageElement.src;
                     modalImage.src = imageUrl;
                     imageModal.classList.add('show');
@@ -1280,7 +1281,8 @@
             }
 
             function closeImageModal() {
-                if (imageModal && modalImage) { // Ensure elements exist before accessing
+                // Ensure elements exist before accessing
+                if (imageModal && modalImage) { 
                     imageModal.classList.add('hide'); // Add hide class for exit animation
                     // Listen for animation end before removing 'show'
                     imageModal.addEventListener('animationend', function handleAnimationEnd() {
@@ -1292,14 +1294,15 @@
                 }
             }
 
-            if (heroImageElement) { // Attach event listener only if the image element is found
-                heroImageElement.addEventListener('click', openImageModal);
+            // Attach event listener to the *container* which is visually clickable
+            if (heroImgContainer) { 
+                heroImgContainer.addEventListener('click', openImageModal);
             }
-            if (closeImageModalBtn) { // Attach event listener only if the close button is found
+            if (closeImageModalBtn) { 
                 closeImageModalBtn.addEventListener('click', closeImageModal);
             }
 
-            if (imageModal) { // Attach event listeners only if imageModal is found
+            if (imageModal) { 
                 imageModal.addEventListener('click', (e) => {
                     if (e.target === imageModal) {
                         closeImageModal();
