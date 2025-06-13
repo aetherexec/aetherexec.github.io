@@ -324,7 +324,7 @@
             position: relative; /* Essential for positioning pseudo-elements */
             transition: var(--transition-smooth);
             flex-shrink: 0; /* Prevent it from shrinking too much */
-            /* Removed cursor: pointer from here in previous turn */
+            cursor: pointer; /* ADDED: Make the entire container clickable */
         }
         .hero-img-container:hover {
             transform: scale(1.01);
@@ -343,7 +343,7 @@
             opacity: 0; /* Initially hidden */
             transition: opacity 0.3s ease-in-out;
             z-index: 10; /* Above the image, below the icon */
-            cursor: pointer; /* Apply cursor to overlay for visual cue */
+            /* Removed cursor: pointer; from here */
         }
 
         /* Fullscreen icon on hover */
@@ -360,7 +360,7 @@
             opacity: 0; /* Initially hidden */
             transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
             z-index: 11; /* Above the overlay */
-            cursor: pointer; /* Apply cursor to icon for visual cue */
+            /* Removed cursor: pointer; from here */
         }
 
         .hero-img-container:hover::before,
@@ -379,7 +379,7 @@
             transition: var(--transition-smooth); /* Smooth image scaling */
             /* Add border-radius to the image itself to match the container's radius */
             border-radius: inherit; /* This will inherit the 20px border-radius from .hero-img-container */
-            cursor: pointer; /* Only the image itself should have the pointer cursor */
+            /* Removed cursor: pointer; from here */
         }
         .hero-img-container:hover img {
             transform: scale(1.03); /* Subtle zoom on image hover */
