@@ -198,17 +198,17 @@
         }
         .hero .container { /* Use the container inside the hero section for padding */
             display: flex;
-            align-items: center;
-            flex-wrap: wrap; /* Allows wrapping on smaller screens */
+            flex-direction: column; /* CHANGED: Stack items vertically */
+            align-items: center; /* Center horizontally */
             gap: 3rem; /* Spacing between content and image */
-            justify-content: center; /* Center horizontally if items wrap */
+            justify-content: center; /* Center vertically */
         }
 
         .hero-content {
             flex: 1;
             min-width: 300px; /* Ensure content doesn't get too squished */
             padding-right: 0; /* Remove explicit padding-right */
-            text-align: left; /* Default alignment */
+            text-align: center; /* CHANGED: Center text content */
             pointer-events: none; /* NEW: Prevent pointer events on the content block itself */
         }
         /* Style for text inside hero-content to ensure it doesn't look like a link */
@@ -218,12 +218,7 @@
             color: inherit; /* Ensure color is inherited, not link color */
         }
 
-        /* Media query for hero content text alignment on smaller screens */
-        @media (max-width: 992px) {
-            .hero-content {
-                text-align: center; /* Center content on smaller screens */
-            }
-        }
+        /* Removed media query for hero-content text-align as it's now always centered */
 
 
         .hero p {
@@ -242,18 +237,14 @@
             gap: 1rem;
             margin-top: 2rem;
             flex-wrap: wrap;
-            /* No need for justify-content: center here if parent is centered */
+            justify-content: center; /* Ensure buttons are centered */
         }
         /* Re-enable pointer events for buttons within hero-content */
         .hero-btns .btn {
             pointer-events: auto; /* NEW: Re-enable pointer events for buttons */
         }
 
-        @media (max-width: 992px) {
-            .hero-btns {
-                justify-content: center; /* Center buttons when hero content is centered */
-            }
-        }
+        /* Removed media query for hero-btns justify-content as it's now always centered */
 
 
         .btn {
@@ -323,7 +314,7 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             position: relative; /* Essential for positioning pseudo-elements */
             transition: var(--transition-smooth);
-            flex-shrink: 0; /* Prevent it from shrinking too much */
+            /* Removed flex-shrink: 0; as it's not needed in column layout and might interfere with centering */
             cursor: pointer; /* ADDED: Make the entire container clickable */
         }
         .hero-img-container:hover {
