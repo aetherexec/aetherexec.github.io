@@ -921,8 +921,6 @@
         <p>Aether needs to review the security of your connection before proceeding.</p>
         <!-- The Turnstile widget will be rendered here -->
         <div class="cf-turnstile" data-sitekey="0x4AAAAAABg6xmWk-xTGdD7d" data-callback="onTurnstileSuccess"></div>
-        <!-- IMPORTANT: Replace "YOUR_TURNSTILE_SITE_KEY" with your actual site key from Cloudflare Turnstile dashboard. -->
-        <!-- Get it from: https://developers.cloudflare.com/turnstile/get-started/ -->
         <p style="margin-top: 2rem; font-size: 0.8rem; color: var(--gray);">Performance & security by Cloudflare</p>
     </div>
 
@@ -1243,30 +1241,12 @@
             const videoCloseButton = videoModal.querySelector('.close-button');
             const youtubeIframe = document.getElementById('youtubeIframe');
 
-            function openVideoModal() {
-                videoModal.classList.add('show');
-                disableBodyScroll();
-                if (!youtubeIframe.src.includes('autoplay=1')) {
-                    youtubeIframe.src += '&autoplay=1';
-                }
+            if (watchDemoBtn) { // Defensive check for watchDemoBtn
+                watchDemoBtn.addEventListener('click', openVideoModal);
             }
-
-            function closeVideoModal() {
-                videoModal.classList.add('hide'); // Add hide class for exit animation
-                // Listen for animation end before removing 'show'
-                videoModal.addEventListener('animationend', function handleAnimationEnd() {
-                    videoModal.classList.remove('show', 'hide'); // Remove both classes after animation
-                    enableBodyScroll();
-                    youtubeIframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
-                    const currentSrc = youtubeIframe.src;
-                    youtubeIframe.src = '';
-                    youtubeIframe.src = currentSrc.split('?')[0] + '?enablejsapi=1&version=3&playerapiid=ytplayer';
-                    videoModal.removeEventListener('animationend', handleAnimationEnd); // Clean up listener
-                }, { once: true }); // Ensure listener is only called once
+            if (videoCloseButton) { // Defensive check for videoCloseButton
+                videoCloseButton.addEventListener('click', closeVideoModal);
             }
-
-            watchDemoBtn.addEventListener('click', openVideoModal);
-            videoCloseButton.addEventListener('click', closeVideoModal);
 
             videoModal.addEventListener('click', (e) => {
                 if (e.target === videoModal) {
@@ -1283,46 +1263,55 @@
 
             // Image Modal functionality (newly added)
             const heroImgContainer = document.querySelector('.hero-img-container');
-            // Select the image element specifically, not the container
-            const heroImageElement = heroImgContainer.querySelector('img'); 
-
             const imageModal = document.getElementById('imageModal');
             const modalImage = document.getElementById('modalImage');
             const closeImageModalBtn = imageModal.querySelector('.close-button');
 
+            // Select the image element specifically, and add a defensive check
+            const heroImageElement = heroImgContainer ? heroImgContainer.querySelector('img') : null; 
+
             function openImageModal() {
-                const imageUrl = heroImageElement.src; // Get the src of the image element
-                modalImage.src = imageUrl;
-                imageModal.classList.add('show');
-                disableBodyScroll();
+                if (heroImageElement && modalImage) { // Ensure elements exist before accessing src
+                    const imageUrl = heroImageElement.src;
+                    modalImage.src = imageUrl;
+                    imageModal.classList.add('show');
+                    disableBodyScroll();
+                }
             }
 
             function closeImageModal() {
-                imageModal.classList.add('hide'); // Add hide class for exit animation
-                // Listen for animation end before removing 'show'
-                imageModal.addEventListener('animationend', function handleAnimationEnd() {
-                    imageModal.classList.remove('show', 'hide'); // Remove both classes after animation
-                    enableBodyScroll();
-                    modalImage.src = ''; // Clear image src to stop loading if it's a large image
-                    imageModal.removeEventListener('animationend', handleAnimationEnd); // Clean up listener
-                }, { once: true }); // Ensure listener is only called once
+                if (imageModal && modalImage) { // Ensure elements exist before accessing
+                    imageModal.classList.add('hide'); // Add hide class for exit animation
+                    // Listen for animation end before removing 'show'
+                    imageModal.addEventListener('animationend', function handleAnimationEnd() {
+                        imageModal.classList.remove('show', 'hide'); // Remove both classes after animation
+                        enableBodyScroll();
+                        modalImage.src = ''; // Clear image src to stop loading if it's a large image
+                        imageModal.removeEventListener('animationend', handleAnimationEnd); // Clean up listener
+                    }, { once: true }); // Ensure listener is only called once
+                }
             }
 
-            // Attach event listener only to the image element
-            heroImageElement.addEventListener('click', openImageModal);
-            closeImageModalBtn.addEventListener('click', closeImageModal);
+            if (heroImageElement) { // Attach event listener only if the image element is found
+                heroImageElement.addEventListener('click', openImageModal);
+            }
+            if (closeImageModalBtn) { // Attach event listener only if the close button is found
+                closeImageModalBtn.addEventListener('click', closeImageModal);
+            }
 
-            imageModal.addEventListener('click', (e) => {
-                if (e.target === imageModal) {
-                    closeImageModal();
-                }
-            });
+            if (imageModal) { // Attach event listeners only if imageModal is found
+                imageModal.addEventListener('click', (e) => {
+                    if (e.target === imageModal) {
+                        closeImageModal();
+                    }
+                });
 
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && imageModal.classList.contains('show')) {
-                    closeImageModal();
-                }
-            });
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && imageModal.classList.contains('show')) {
+                        closeImageModal();
+                    }
+                });
+            }
 
         } // End of initializePageScripts
         // Call this function after Turnstile success
