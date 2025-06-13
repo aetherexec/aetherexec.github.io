@@ -637,7 +637,7 @@
             justify-content: center;
             align-items: center;
             opacity: 0; /* Start hidden for animation */
-            transition: opacity 0.3s ease-in-out;
+            transition: opacity 0.5s ease-out; /* Match this duration with setTimeout */
         }
         .modal.show { /* Class added by JS to show modal */
             display: flex;
@@ -1113,30 +1113,32 @@
             const overlay = document.getElementById('turnstile-overlay');
             const mainContent = document.getElementById('main-content');
             
-            // Add 'hidden' class to trigger fade-out animation
-            overlay.classList.add('hidden');
-            
-            // Listen for the 'opacity' transition to end on the overlay
-            overlay.addEventListener('transitionend', function handleTransitionEnd(event) {
-                // Ensure the event is for opacity transition to avoid spurious calls
-                if (event.propertyName === 'opacity') {
-                    overlay.style.display = 'none'; // Fully hide the overlay
-                    mainContent.style.display = 'block'; // Show the main content
-                    document.body.classList.remove('no-scroll'); // Re-enable body scroll
-                    initializePageScripts(); // Initialize other page functionalities
-                    overlay.removeEventListener('transitionend', handleTransitionEnd); // Clean up the listener
-                }
-            });
+            console.log('Turnstile success! Hiding overlay...');
+            overlay.classList.add('hidden'); // This triggers the opacity transition
+
+            // Use setTimeout to hide the overlay completely after the transition duration
+            // This is more reliable than 'transitionend' for combined display/opacity changes
+            setTimeout(() => {
+                console.log('Timeout reached. Setting display to none and showing main content.');
+                overlay.style.display = 'none'; // Fully hide the overlay
+                mainContent.style.display = 'block'; // Show the main content
+                document.body.classList.remove('no-scroll'); // Re-enable body scroll
+                initializePageScripts(); // Initialize other page functionalities
+                console.log('Main content should now be visible.');
+            }, 500); // 500ms matches the transition duration in CSS for opacity
         }
 
         // Initially hide main content and prevent scrolling until Turnstile is passed
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM Content Loaded. Initializing page state.');
             document.body.classList.add('no-scroll');
+            // The main-content is already display: none; in HTML, it will be shown by onTurnstileSuccess
             // No need to call initializePageScripts here as it's called after Turnstile success
         });
 
         // Function to encapsulate all main page JavaScript
         function initializePageScripts() {
+            console.log('initializePageScripts called. Setting up page interactivity.');
             // Helper function to manage body scroll
             function disableBodyScroll() {
                 document.body.classList.add('no-scroll');
