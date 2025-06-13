@@ -198,17 +198,17 @@
         }
         .hero .container { /* Use the container inside the hero section for padding */
             display: flex;
-            flex-direction: column; /* CHANGED: Stack items vertically */
-            align-items: center; /* Center horizontally */
+            align-items: center;
+            flex-wrap: wrap; /* Allows wrapping on smaller screens */
             gap: 3rem; /* Spacing between content and image */
-            justify-content: center; /* Center vertically */
+            justify-content: center; /* Center horizontally if items wrap */
         }
 
         .hero-content {
             flex: 1;
             min-width: 300px; /* Ensure content doesn't get too squished */
             padding-right: 0; /* Remove explicit padding-right */
-            text-align: center; /* CHANGED: Center text content */
+            text-align: left; /* Default alignment */
             pointer-events: none; /* NEW: Prevent pointer events on the content block itself */
         }
         /* Style for text inside hero-content to ensure it doesn't look like a link */
@@ -218,7 +218,12 @@
             color: inherit; /* Ensure color is inherited, not link color */
         }
 
-        /* Removed media query for hero-content text-align as it's now always centered */
+        /* Media query for hero content text alignment on smaller screens */
+        @media (max-width: 992px) {
+            .hero-content {
+                text-align: center; /* Center content on smaller screens */
+            }
+        }
 
 
         .hero p {
@@ -237,14 +242,18 @@
             gap: 1rem;
             margin-top: 2rem;
             flex-wrap: wrap;
-            justify-content: center; /* Ensure buttons are centered */
+            /* No need for justify-content: center here if parent is centered */
         }
         /* Re-enable pointer events for buttons within hero-content */
         .hero-btns .btn {
             pointer-events: auto; /* NEW: Re-enable pointer events for buttons */
         }
 
-        /* Removed media query for hero-btns justify-content as it's now always centered */
+        @media (max-width: 992px) {
+            .hero-btns {
+                justify-content: center; /* Center buttons when hero content is centered */
+            }
+        }
 
 
         .btn {
@@ -314,8 +323,8 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             position: relative; /* Essential for positioning pseudo-elements */
             transition: var(--transition-smooth);
-            /* Removed flex-shrink: 0; as it's not needed in column layout and might interfere with centering */
-            cursor: pointer; /* ADDED: Make the entire container clickable */
+            flex-shrink: 0; /* Prevent it from shrinking too much */
+            /* Removed cursor: pointer from here in previous turn */
         }
         .hero-img-container:hover {
             transform: scale(1.01);
@@ -334,7 +343,8 @@
             opacity: 0; /* Initially hidden */
             transition: opacity 0.3s ease-in-out;
             z-index: 10; /* Above the image, below the icon */
-            /* Removed cursor: pointer; from here */
+            border-radius: inherit; /* Inherit border-radius from container */
+            cursor: pointer; /* Apply cursor to overlay for visual cue */
         }
 
         /* Fullscreen icon on hover */
@@ -351,7 +361,7 @@
             opacity: 0; /* Initially hidden */
             transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
             z-index: 11; /* Above the overlay */
-            /* Removed cursor: pointer; from here */
+            cursor: pointer; /* Apply cursor to icon for visual cue */
         }
 
         .hero-img-container:hover::before,
@@ -370,7 +380,7 @@
             transition: var(--transition-smooth); /* Smooth image scaling */
             /* Add border-radius to the image itself to match the container's radius */
             border-radius: inherit; /* This will inherit the 20px border-radius from .hero-img-container */
-            /* Removed cursor: pointer; from here */
+            cursor: pointer; /* Only the image itself should have the pointer cursor */
         }
         .hero-img-container:hover img {
             transform: scale(1.03); /* Subtle zoom on image hover */
@@ -911,6 +921,8 @@
         <p>Aether needs to review the security of your connection before proceeding.</p>
         <!-- The Turnstile widget will be rendered here -->
         <div class="cf-turnstile" data-sitekey="0x4AAAAAABg6xmWk-xTGdD7d" data-callback="onTurnstileSuccess"></div>
+        <!-- IMPORTANT: Replace "YOUR_TURNSTILE_SITE_KEY" with your actual site key from Cloudflare Turnstile dashboard. -->
+        <!-- Get it from: https://developers.cloudflare.com/turnstile/get-started/ -->
         <p style="margin-top: 2rem; font-size: 0.8rem; color: var(--gray);">Performance & security by Cloudflare</p>
     </div>
 
@@ -1228,84 +1240,89 @@
             // Video Modal functionality (existing)
             const watchDemoBtn = document.getElementById('watchDemoBtn');
             const videoModal = document.getElementById('videoModal');
-            const videoCloseButton = videoModal ? videoModal.querySelector('.close-button') : null; // Defensive check for videoCloseButton
+            const videoCloseButton = videoModal.querySelector('.close-button');
             const youtubeIframe = document.getElementById('youtubeIframe');
 
-            if (watchDemoBtn) { // Defensive check for watchDemoBtn
-                watchDemoBtn.addEventListener('click', openVideoModal);
-            }
-            if (videoCloseButton) { // Defensive check for videoCloseButton
-                videoCloseButton.addEventListener('click', closeVideoModal);
-            }
-
-            if (videoModal) { // Only attach if modal exists
-                videoModal.addEventListener('click', (e) => {
-                    if (e.target === videoModal) {
-                        closeVideoModal();
-                    }
-                });
-
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'Escape' && videoModal.classList.contains('show')) {
-                        closeVideoModal();
-                    }
-                });
+            function openVideoModal() {
+                videoModal.classList.add('show');
+                disableBodyScroll();
+                if (!youtubeIframe.src.includes('autoplay=1')) {
+                    youtubeIframe.src += '&autoplay=1';
+                }
             }
 
-            // Image Modal functionality
+            function closeVideoModal() {
+                videoModal.classList.add('hide'); // Add hide class for exit animation
+                // Listen for animation end before removing 'show'
+                videoModal.addEventListener('animationend', function handleAnimationEnd() {
+                    videoModal.classList.remove('show', 'hide'); // Remove both classes after animation
+                    enableBodyScroll();
+                    youtubeIframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+                    const currentSrc = youtubeIframe.src;
+                    youtubeIframe.src = '';
+                    youtubeIframe.src = currentSrc.split('?')[0] + '?enablejsapi=1&version=3&playerapiid=ytplayer';
+                    videoModal.removeEventListener('animationend', handleAnimationEnd); // Clean up listener
+                }, { once: true }); // Ensure listener is only called once
+            }
+
+            watchDemoBtn.addEventListener('click', openVideoModal);
+            videoCloseButton.addEventListener('click', closeVideoModal);
+
+            videoModal.addEventListener('click', (e) => {
+                if (e.target === videoModal) {
+                    closeVideoModal();
+                }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && videoModal.classList.contains('show')) {
+                    closeVideoModal();
+                }
+            });
+
+
+            // Image Modal functionality (newly added)
             const heroImgContainer = document.querySelector('.hero-img-container');
+            // Select the image element specifically, not the container
+            const heroImageElement = heroImgContainer.querySelector('img'); 
+
             const imageModal = document.getElementById('imageModal');
             const modalImage = document.getElementById('modalImage');
-            const closeImageModalBtn = imageModal ? imageModal.querySelector('.close-button') : null; // Defensive selection for close button
-
-            // The image element itself is inside heroImgContainer, and its src is needed for the modal
-            const heroImageElement = heroImgContainer ? heroImgContainer.querySelector('img') : null; 
+            const closeImageModalBtn = imageModal.querySelector('.close-button');
 
             function openImageModal() {
-                // Ensure all necessary elements exist before proceeding
-                if (heroImageElement && modalImage && imageModal) { 
-                    const imageUrl = heroImageElement.src;
-                    modalImage.src = imageUrl;
-                    imageModal.classList.add('show');
-                    disableBodyScroll();
-                }
+                const imageUrl = heroImageElement.src; // Get the src of the image element
+                modalImage.src = imageUrl;
+                imageModal.classList.add('show');
+                disableBodyScroll();
             }
 
             function closeImageModal() {
-                // Ensure elements exist before accessing
-                if (imageModal && modalImage) { 
-                    imageModal.classList.add('hide'); // Add hide class for exit animation
-                    // Listen for animation end before removing 'show'
-                    imageModal.addEventListener('animationend', function handleAnimationEnd() {
-                        imageModal.classList.remove('show', 'hide'); // Remove both classes after animation
-                        enableBodyScroll();
-                        modalImage.src = ''; // Clear image src to stop loading if it's a large image
-                        imageModal.removeEventListener('animationend', handleAnimationEnd); // Clean up listener
-                    }, { once: true }); // Ensure listener is only called once
+                imageModal.classList.add('hide'); // Add hide class for exit animation
+                // Listen for animation end before removing 'show'
+                imageModal.addEventListener('animationend', function handleAnimationEnd() {
+                    imageModal.classList.remove('show', 'hide'); // Remove both classes after animation
+                    enableBodyScroll();
+                    modalImage.src = ''; // Clear image src to stop loading if it's a large image
+                    imageModal.removeEventListener('animationend', handleAnimationEnd); // Clean up listener
+                }, { once: true }); // Ensure listener is only called once
+            }
+
+            // Attach event listener only to the image element
+            heroImageElement.addEventListener('click', openImageModal);
+            closeImageModalBtn.addEventListener('click', closeImageModal);
+
+            imageModal.addEventListener('click', (e) => {
+                if (e.target === imageModal) {
+                    closeImageModal();
                 }
-            }
+            });
 
-            // Attach event listener to the *container* which is visually clickable
-            if (heroImgContainer) { 
-                heroImgContainer.addEventListener('click', openImageModal);
-            }
-            if (closeImageModalBtn) { 
-                closeImageModalBtn.addEventListener('click', closeImageModal);
-            }
-
-            if (imageModal) { 
-                imageModal.addEventListener('click', (e) => {
-                    if (e.target === imageModal) {
-                        closeImageModal();
-                    }
-                });
-
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'Escape' && imageModal.classList.contains('show')) {
-                        closeImageModal();
-                    }
-                });
-            }
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && imageModal.classList.contains('show')) {
+                    closeImageModal();
+                }
+            });
 
         } // End of initializePageScripts
         // Call this function after Turnstile success
